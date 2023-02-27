@@ -1,0 +1,8 @@
+menu
+  id file;
+  value File;
+  popup
+    menuitem
+      New onclick "CreateNewDoc()".
+      Open onclick "OpenDoc()".
+      Close onclick "CloseDoc()"

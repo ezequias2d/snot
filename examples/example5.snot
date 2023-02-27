@@ -1,0 +1,37 @@
+menu
+  header "SVG Viewer";
+  items
+    Open,
+    OpenNew 
+      label "Open New".
+    separator,
+    ZoomIn 
+      label "Zoom In".
+    ZoomOut 
+      label "Zoom Out".
+    OriginalView 
+      label "Original View".
+    separator,
+    Quality,
+    Pause,
+    Mute,
+    separator,
+    Find 
+      label "Find...".
+    FindAgain
+      label "Find Again".
+    Copy,
+    CopyAgain
+      label "Copy Again".
+    CopySVG
+      label "Copy SVG".
+    ViewSVG
+      label "View SVG".
+    ViewSource
+      label "View Source".
+    SaveAs
+      label "View Source".
+    separator,
+    Help,
+    About
+      label "About Adobe CVG Viewer..."

@@ -1,0 +1,16 @@
+Language: Cpp
+IndentWidth: 4
+IndentCaseLabels: false
+ReflowComments: true
+ColumnLimit: 80
+AccessModifierOffset: -4
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
+ExperimentalAutoDetectBinPacking: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AlignConsecutiveAssignments: true
+BreakBeforeBraces: Allman
