@@ -38,8 +38,8 @@ web-app
       dataStoreUrl "jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon";
       dataStoreUser sa;
       dataStorePassword dataStoreTestQuery;
-      dataStoreTestQuery "SET NOCOUNT ON;select test='test';"
-      dataStoreLogFile "/usr/local/tomcat/logs/datastore.log"
+      dataStoreTestQuery "SET NOCOUNT ON;select test='test';";
+      dataStoreLogFile "/usr/local/tomcat/logs/datastore.log";
       dataStoreInitConns 10;
       dataStoreMaxConns 100;
       dataStoreConnUsageLimit 100;
