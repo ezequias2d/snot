@@ -32,11 +32,11 @@ typedef int SNOT_BOOL;
 
 #define SNOT_TRUE 1
 #define SNOT_FALSE 0
-#define __SNORT_RETURN_ERROR(result)                                           \
+#define _SNOT_RETURN_ERROR(result)                                             \
     {                                                                          \
-        SNOT_RESULT __result = (result);                                       \
-        if (__result != SNOT_OK)                                               \
-            return __result;                                                   \
+        SNOT_RESULT _snot_result = (result);                                   \
+        if (_snot_result != SNOT_OK)                                           \
+            return _snot_result;                                               \
     }
 
 #define SNOT_IMPLEMENTATION
@@ -90,18 +90,18 @@ extern "C"
 {
 #endif
 
-SNOT_DEF SNOT_PARSER *snot_create(SNOT_CALLBACKS cbs, void *userdata);
-SNOT_DEF void snot_free(SNOT_PARSER *p);
-SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c);
-SNOT_DEF SNOT_RESULT snot_end(SNOT_PARSER *p);
-SNOT_DEF size_t snot_parent(SNOT_PARSER *p, size_t id);
-SNOT_DEF SNOT_RESULT snot_value(SNOT_PARSER *p,
-                                size_t id,
-                                const char **value,
-                                size_t *length);
-SNOT_DEF SNOT_RESULT snot_number_type(SNOT_PARSER *p,
-                                      size_t id,
-                                      SNOT_NUMBER_TYPE *numberType);
+    SNOT_DEF SNOT_PARSER *snot_create(SNOT_CALLBACKS cbs, void *userdata);
+    SNOT_DEF void snot_free(SNOT_PARSER *p);
+    SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c);
+    SNOT_DEF SNOT_RESULT snot_end(SNOT_PARSER *p);
+    SNOT_DEF size_t snot_parent(SNOT_PARSER *p, size_t id);
+    SNOT_DEF SNOT_RESULT snot_value(SNOT_PARSER *p,
+                                    size_t id,
+                                    const char **value,
+                                    size_t *length);
+    SNOT_DEF SNOT_RESULT snot_number_type(SNOT_PARSER *p,
+                                          size_t id,
+                                          SNOT_NUMBER_TYPE *numberType);
 
 #ifdef __cplusplus
 }
@@ -148,7 +148,7 @@ struct _SNOT_PARSER
     size_t current;
 };
 
-static SNOT_RESULT __snot_grow(SNOT_PARSER *p, void **m, size_t *ps, size_t g)
+static SNOT_RESULT _snot_grow(SNOT_PARSER *p, void **m, size_t *ps, size_t g)
 {
     void *new_mem;
     assert(g);
@@ -159,24 +159,24 @@ static SNOT_RESULT __snot_grow(SNOT_PARSER *p, void **m, size_t *ps, size_t g)
     return SNOT_OK;
 }
 
-static SNOT_BOOL __snot_is_valid(uint32_t c)
+static SNOT_BOOL _snot_is_valid(uint32_t c)
 {
     return c != 0xFFFE && c != 0xFFFF && (c < 0xFDD0 || c > 0xFDEF);
 }
 
-static SNOT_BOOL __snot_is_reserved(uint32_t c)
+static SNOT_BOOL _snot_is_reserved(uint32_t c)
 {
     return c == '(' || c == ')' || c == ';' || c == ',' || c == '.';
 }
 
-static SNOT_RESULT __snot_append_token(SNOT_PARSER *p, const SNOT_TOKEN *token)
+static SNOT_RESULT _snot_append_token(SNOT_PARSER *p, const SNOT_TOKEN *token)
 {
     size_t size = p->token_count * sizeof(SNOT_TOKEN);
 
     if (p->next_token >= p->token_count)
     {
-        __SNORT_RETURN_ERROR(
-            __snot_grow(p, (void **)&p->tokens, &size, sizeof(SNOT_TOKEN)));
+        _SNOT_RETURN_ERROR(
+            _snot_grow(p, (void **)&p->tokens, &size, sizeof(SNOT_TOKEN)));
         p->token_count = size / sizeof(SNOT_TOKEN);
     }
 
@@ -186,7 +186,7 @@ static SNOT_RESULT __snot_append_token(SNOT_PARSER *p, const SNOT_TOKEN *token)
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_pop_token(SNOT_PARSER *p)
+static SNOT_RESULT _snot_pop_token(SNOT_PARSER *p)
 {
     const size_t size     = p->token_count * sizeof(SNOT_TOKEN);
     const size_t avaiable = size - p->current;
@@ -206,7 +206,7 @@ static SNOT_RESULT __snot_pop_token(SNOT_PARSER *p)
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_peek_token(SNOT_PARSER *p, size_t i, SNOT_TOKEN **t)
+static SNOT_RESULT _snot_peek_token(SNOT_PARSER *p, size_t i, SNOT_TOKEN **t)
 {
     if (p->next_token < i + 1)
         return SNOT_ERROR_PARTIAL;
@@ -215,13 +215,13 @@ static SNOT_RESULT __snot_peek_token(SNOT_PARSER *p, size_t i, SNOT_TOKEN **t)
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_append_code_point(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_append_code_point(SNOT_PARSER *p, uint32_t c)
 {
     const size_t avaiable = p->pool_size - p->current;
     char *current;
 
     if (avaiable < sizeof(uint32_t))
-        __SNORT_RETURN_ERROR(__snot_grow(
+        _SNOT_RETURN_ERROR(_snot_grow(
             p, (void **)&p->pool, &p->pool_size, sizeof(uint32_t) - avaiable));
 
     current = p->pool + p->current;
@@ -257,7 +257,7 @@ static SNOT_RESULT __snot_append_code_point(SNOT_PARSER *p, uint32_t c)
 }
 
 static void
-__snot_start_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
+_snot_start_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
 {
     assert(p);
     assert(token);
@@ -267,7 +267,7 @@ __snot_start_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
 }
 
 static void
-__snot_end_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
+_snot_end_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
 {
     assert(p);
     assert(token);
@@ -276,7 +276,7 @@ __snot_end_section(SNOT_PARSER *p, size_t id, const SNOT_TOKEN *token)
     p->callbacks.end_section(p, id, p->userdata);
 }
 
-static SNOT_BOOL __snot_is_whitespace(uint32_t c)
+static SNOT_BOOL _snot_is_whitespace(uint32_t c)
 {
     return c == ' ' || c == 0x00A0 || c == 0x1680 || c == 0x2000 ||
            c == 0x2001 || c == 0x2002 || c == 0x2003 || c == 0x2004 ||
@@ -285,19 +285,19 @@ static SNOT_BOOL __snot_is_whitespace(uint32_t c)
            c == 0x3000 || c == '\n' || c == '\r' || c == '\t';
 }
 
-static SNOT_RESULT __snot_consume(SNOT_PARSER *p, size_t count)
+static SNOT_RESULT _snot_consume(SNOT_PARSER *p, size_t count)
 {
     while (count--)
     {
         SNOT_TOKEN *token;
         const size_t id = p->next_token - 1;
 
-        __SNORT_RETURN_ERROR(__snot_peek_token(p, 0, &token));
+        _SNOT_RETURN_ERROR(_snot_peek_token(p, 0, &token));
 
         switch (token->type)
         {
         case SNOT_TOKEN_TYPE_SECTION:
-            __snot_end_section(p, id, token);
+            _snot_end_section(p, id, token);
             break;
         case SNOT_TOKEN_TYPE_NUMBER:
             p->callbacks.number(p, id, p->userdata);
@@ -309,13 +309,13 @@ static SNOT_RESULT __snot_consume(SNOT_PARSER *p, size_t count)
         default:
             return SNOT_ERROR_INVALID_CHARACTER;
         }
-        __snot_pop_token(p);
+        _snot_pop_token(p);
     }
 
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_value(SNOT_PARSER *p, uint32_t c)
 {
     size_t count = 1;
     assert(p);
@@ -327,7 +327,7 @@ static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
     case ';':
         count = (count < 2) ? 2 : count;
     case ',':
-        return __snot_consume(p, count);
+        return _snot_consume(p, count);
     case '(':
     {
         SNOT_TOKEN token;
@@ -335,21 +335,20 @@ static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
         assert(p->start == p->current);
         token.start = token.length = p->start;
         token.parent               = p->parent;
-        __snot_append_token(p, &token);
+        _snot_append_token(p, &token);
         break;
     }
     case ')':
         do
         {
             const SNOT_TOKEN *pToken;
-            __SNORT_RETURN_ERROR(
-                __snot_peek_token(p, 0, (SNOT_TOKEN **)&pToken));
+            _SNOT_RETURN_ERROR(_snot_peek_token(p, 0, (SNOT_TOKEN **)&pToken));
 
             if (pToken->type != SNOT_TOKEN_TYPE_GROUP)
-                __snot_consume(p, 1);
+                _snot_consume(p, 1);
             else
             {
-                __SNORT_RETURN_ERROR(__snot_pop_token(p));
+                _SNOT_RETURN_ERROR(_snot_pop_token(p));
                 break;
             }
         } while (SNOT_TRUE);
@@ -360,7 +359,7 @@ static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
     case '\\':
     {
         SNOT_TOKEN *last;
-        __SNORT_RETURN_ERROR(__snot_peek_token(p, 0, &last));
+        _SNOT_RETURN_ERROR(_snot_peek_token(p, 0, &last));
 
         if (last->type != SNOT_TOKEN_TYPE_STRING)
             return SNOT_ERROR_INVALID_CHARACTER;
@@ -369,10 +368,10 @@ static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
         break;
     }
     default:
-        if (!__snot_is_valid(c))
+        if (!_snot_is_valid(c))
             return SNOT_ERROR_INVALID_CHARACTER;
 
-        if (__snot_is_whitespace(c))
+        if (_snot_is_whitespace(c))
             break;
 
         if (c >= '0' && c <= '9')
@@ -383,20 +382,20 @@ static SNOT_RESULT __snot_value(SNOT_PARSER *p, uint32_t c)
         else
             p->type = SNOT_TOKEN_TYPE_IDENTIFIER;
 
-        return __snot_append_code_point(p, c);
+        return _snot_append_code_point(p, c);
     }
 
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_section(SNOT_PARSER *p)
+static SNOT_RESULT _snot_section(SNOT_PARSER *p)
 {
     SNOT_TOKEN *last = NULL;
 
     size_t i = 0;
     do
     {
-        if (__snot_peek_token(p, i, &last) == SNOT_OK)
+        if (_snot_peek_token(p, i, &last) == SNOT_OK)
         {
             if (last->type == SNOT_TOKEN_TYPE_IDENTIFIER ||
                 last->type == SNOT_TOKEN_TYPE_STRING)
@@ -410,7 +409,7 @@ static SNOT_RESULT __snot_section(SNOT_PARSER *p)
 
                 /* previous token is now a section */
                 last->type = SNOT_TOKEN_TYPE_SECTION;
-                __snot_start_section(p, p->next_token - i - 1, last);
+                _snot_start_section(p, p->next_token - i - 1, last);
             }
         }
         else
@@ -421,17 +420,17 @@ static SNOT_RESULT __snot_section(SNOT_PARSER *p)
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_identifier(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_identifier(SNOT_PARSER *p, uint32_t c)
 {
     assert(p);
     assert(c);
 
     /* end of identifier */
-    if (__snot_is_whitespace(c) || __snot_is_reserved(c))
+    if (_snot_is_whitespace(c) || _snot_is_reserved(c))
     {
         SNOT_TOKEN token;
 
-        __SNORT_RETURN_ERROR(__snot_append_code_point(p, '\0'));
+        _SNOT_RETURN_ERROR(_snot_append_code_point(p, '\0'));
 
         token.start  = p->start;
         token.length = p->current - p->start - 1;
@@ -440,18 +439,18 @@ static SNOT_RESULT __snot_identifier(SNOT_PARSER *p, uint32_t c)
 
         p->start = p->current;
 
-        __SNORT_RETURN_ERROR(__snot_section(p));
-        __SNORT_RETURN_ERROR(__snot_append_token(p, &token));
+        _SNOT_RETURN_ERROR(_snot_section(p));
+        _SNOT_RETURN_ERROR(_snot_append_token(p, &token));
 
         p->type = SNOT_TOKEN_TYPE_UNDEFINED;
 
-        return __snot_is_whitespace(c) ? SNOT_OK : SNOT_REPEAT;
+        return _snot_is_whitespace(c) ? SNOT_OK : SNOT_REPEAT;
     }
 
-    return __snot_append_code_point(p, c);
+    return _snot_append_code_point(p, c);
 }
 
-static SNOT_RESULT __snot_escape_character(uint32_t *c)
+static SNOT_RESULT _snot_escape_character(uint32_t *c)
 {
     const char cc = *c;
     if (cc == '\'' || cc == '"' || cc == '?' || cc == '\\')
@@ -477,7 +476,7 @@ static SNOT_RESULT __snot_escape_character(uint32_t *c)
     return SNOT_OK;
 }
 
-static SNOT_RESULT __snot_string(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_string(SNOT_PARSER *p, uint32_t c)
 {
     SNOT_BOOL escape;
     assert(p);
@@ -487,7 +486,7 @@ static SNOT_RESULT __snot_string(SNOT_PARSER *p, uint32_t c)
     {
         SNOT_TOKEN token;
 
-        __SNORT_RETURN_ERROR(__snot_append_code_point(p, '\0'));
+        _SNOT_RETURN_ERROR(_snot_append_code_point(p, '\0'));
 
         token.start  = p->start;
         token.length = p->current - p->start - 1;
@@ -496,8 +495,8 @@ static SNOT_RESULT __snot_string(SNOT_PARSER *p, uint32_t c)
 
         p->start = p->current;
 
-        __SNORT_RETURN_ERROR(__snot_section(p));
-        __SNORT_RETURN_ERROR(__snot_append_token(p, &token));
+        _SNOT_RETURN_ERROR(_snot_section(p));
+        _SNOT_RETURN_ERROR(_snot_append_token(p, &token));
 
         p->type = SNOT_TOKEN_TYPE_UNDEFINED;
 
@@ -505,21 +504,21 @@ static SNOT_RESULT __snot_string(SNOT_PARSER *p, uint32_t c)
     }
     if (escape)
     {
-        __SNORT_RETURN_ERROR(__snot_escape_character(&c));
+        _SNOT_RETURN_ERROR(_snot_escape_character(&c));
         p->current--;
     }
-    return __snot_append_code_point(p, c);
+    return _snot_append_code_point(p, c);
 }
 
-static SNOT_RESULT __snot_continue(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_continue(SNOT_PARSER *p, uint32_t c)
 {
-    if (__snot_is_whitespace(c))
+    if (_snot_is_whitespace(c))
         return SNOT_OK;
     else if (c == '"')
     {
         SNOT_TOKEN *last;
-        __SNORT_RETURN_ERROR(__snot_peek_token(p, 0, &last));
-        __SNORT_RETURN_ERROR(__snot_pop_token(p));
+        _SNOT_RETURN_ERROR(_snot_peek_token(p, 0, &last));
+        _SNOT_RETURN_ERROR(_snot_pop_token(p));
 
         p->start   = last->start;
         p->current = last->length + last->start;
@@ -539,7 +538,7 @@ static SNOT_BOOL isXDigit(uint32_t c)
 
 static SNOT_BOOL isOctDigit(uint32_t c) { return c >= '0' && c <= '7'; }
 
-static SNOT_RESULT __snot_number(SNOT_PARSER *p, uint32_t c)
+static SNOT_RESULT _snot_number(SNOT_PARSER *p, uint32_t c)
 {
     assert(p);
     assert(c);
@@ -559,17 +558,16 @@ static SNOT_RESULT __snot_number(SNOT_PARSER *p, uint32_t c)
     }
 
     if (!(c == '.' && p->numberType == SNOT_DEC_NUMBER) &&
-        (__snot_is_whitespace(c) || __snot_is_reserved(c)))
+        (_snot_is_whitespace(c) || _snot_is_reserved(c)))
     {
         SNOT_TOKEN token;
-        const SNOT_BOOL dot = __snot_is_whitespace(c) &&
-                              p->current > p->start &&
+        const SNOT_BOOL dot = _snot_is_whitespace(c) && p->current > p->start &&
                               p->pool[p->current - 1] == '.';
 
         if (dot)
             p->pool[p->current - 1] = '\0';
         else
-            __SNORT_RETURN_ERROR(__snot_append_code_point(p, '\0'));
+            _SNOT_RETURN_ERROR(_snot_append_code_point(p, '\0'));
 
         token.start      = p->start;
         token.length     = p->current - p->start - 1;
@@ -579,15 +577,15 @@ static SNOT_RESULT __snot_number(SNOT_PARSER *p, uint32_t c)
 
         p->start = p->current;
 
-        __SNORT_RETURN_ERROR(__snot_section(p));
-        __SNORT_RETURN_ERROR(__snot_append_token(p, &token));
+        _SNOT_RETURN_ERROR(_snot_section(p));
+        _SNOT_RETURN_ERROR(_snot_append_token(p, &token));
 
         p->type = SNOT_TOKEN_TYPE_UNDEFINED;
 
         if (dot)
-            __snot_consume(p, 3);
+            _snot_consume(p, 3);
 
-        return __snot_is_whitespace(c) ? SNOT_OK : SNOT_REPEAT;
+        return _snot_is_whitespace(c) ? SNOT_OK : SNOT_REPEAT;
     }
 
     switch (p->numberType)
@@ -615,7 +613,7 @@ static SNOT_RESULT __snot_number(SNOT_PARSER *p, uint32_t c)
         return SNOT_ERROR_TOKEN_TYPE_UNDEFINED;
     }
 
-    return __snot_append_code_point(p, c);
+    return _snot_append_code_point(p, c);
 }
 
 SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c)
@@ -627,19 +625,19 @@ SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c)
         switch (p->type)
         {
         case SNOT_TOKEN_TYPE_UNDEFINED:
-            result = __snot_value(p, c);
+            result = _snot_value(p, c);
             break;
         case SNOT_TOKEN_TYPE_IDENTIFIER:
-            result = __snot_identifier(p, c);
+            result = _snot_identifier(p, c);
             break;
         case SNOT_TOKEN_TYPE_STRING:
-            result = __snot_string(p, c);
+            result = _snot_string(p, c);
             break;
         case SNOT_TOKEN_TYPE_NUMBER:
-            result = __snot_number(p, c);
+            result = _snot_number(p, c);
             break;
         case SNOT_TOKEN_TYPE_CONTINUE:
-            result = __snot_continue(p, c);
+            result = _snot_continue(p, c);
             break;
         default:
             return SNOT_ERROR_TOKEN_TYPE_UNDEFINED;
@@ -652,10 +650,10 @@ SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c)
 SNOT_DEF SNOT_RESULT snot_end(SNOT_PARSER *p)
 {
     if (p->start != p->current)
-        __SNORT_RETURN_ERROR(snot_parse(p, ' '));
+        _SNOT_RETURN_ERROR(snot_parse(p, ' '));
 
     while (p->next_token)
-        __SNORT_RETURN_ERROR(__snot_consume(p, 1));
+        _SNOT_RETURN_ERROR(_snot_consume(p, 1));
 
     return SNOT_OK;
 }
@@ -699,7 +697,7 @@ SNOT_DEF SNOT_RESULT snot_value(SNOT_PARSER *p,
 
 SNOT_DEF SNOT_PARSER *snot_create(SNOT_CALLBACKS cbs, void *userdata)
 {
-    SNOT_PARSER *p = cbs.alloc(sizeof(SNOT_PARSER));
+    SNOT_PARSER *p = (SNOT_PARSER *)cbs.alloc(sizeof(SNOT_PARSER));
 
     p->callbacks   = cbs;
     p->userdata    = userdata;
