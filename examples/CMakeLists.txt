@@ -3,8 +3,10 @@ set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 add_executable(example main.c)
+add_executable(example2 main.cpp)
 
 target_link_libraries(example PRIVATE snot)
+target_link_libraries(example2 PRIVATE snot)
 
 configure_file(example1.snot example1.snot COPYONLY)
 configure_file(example2.snot example2.snot COPYONLY)
