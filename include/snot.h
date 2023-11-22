@@ -85,6 +85,11 @@ typedef struct _SNOT_CALLBACKS
 
 #ifndef SNOT_IMPLEMENTATION
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 SNOT_DEF SNOT_PARSER *snot_create(SNOT_CALLBACKS cbs, void *userdata);
 SNOT_DEF void snot_free(SNOT_PARSER *p);
 SNOT_DEF SNOT_RESULT snot_parse(SNOT_PARSER *p, uint32_t c);
@@ -97,6 +102,10 @@ SNOT_DEF SNOT_RESULT snot_value(SNOT_PARSER *p,
 SNOT_DEF SNOT_RESULT snot_number_type(SNOT_PARSER *p,
                                       size_t id,
                                       SNOT_NUMBER_TYPE *numberType);
+
+#ifdef __cplusplus
+}
+#endif
 
 #else
 typedef enum _SNOT_TOKEN_TYPE
