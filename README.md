@@ -85,7 +85,7 @@ Stack starts emtpy, when it finds any value token(identifier, string or number) 
 
 When finds a comma, semicolon or a period symbol the last 1, 2 or 3, respectively, tokens are popped from stack, soo you can insert more values into a section without create new sections.
 
-But if 1, 2 or 3 pop is not enough for you, you can threw everything up in the air and use parentheses. The '(' symbol will add a token into the stack that is ignored by the rule that generates sections and ')' will pops until reaching the '(' token.
+But if 1, 2 or 3 pop is not enough for you, you can drop everything and use parentheses. The '(' symbol will add a token into the stack that is ignored by the rule that generates sections and ')' will pops until reaching the '(' token.
 
 ```
 web-app
